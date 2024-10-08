@@ -9,7 +9,9 @@ class Core:
         self.mainMem = mainMemory
         self.executionCycle = 0
         self.computeCycles = 0
-        self.memoryOpCount = 0
+        # self.memoryOpCount = 0
+        self.loadCount = 0
+        self.storeCount = 0
         self.idleCycles = 0
         self.dataCacheHit = 0
         self.dataCacheMiss = 0
@@ -30,8 +32,38 @@ class Core:
                 label = int(label)
 
                 if label == 0:
-                    self.cache.loadMemory(value)
+                    hit, evicted = self.cache[0].loadMemory(value)
+                    if (not hit and evicted):
+                        self.executionCycle += 201
+                        self.idleCycles += 200
+                        self.dataCacheMiss += 1
+                    elif (not hit and not evicted):
+                        self.executionCycle += 101
+                        self.idleCycles += 100
+                        self.dataCacheMiss += 1
+                    else:
+                        self.executionCycle += 1
+                        self.dataCacheHit += 1
+                        
+                    self.loadCount += 1
                 elif label == 1:
-                    self.cache.storeMemory(value)
+                    hit, evicted = self.cache[0].storeMemory(value)
+                    if (not hit and evicted):
+                        #if cache miss + eviction occurred -> write back + eviction = 100 + 100 = 200. +1 for L1 cache check
+                        self.executionCycle += 101
+                        
+                        #Assume that store eviction 100 cycles counts as idle - to check with prof
+                        self.idleCycles += 100
+                        self.dataCacheMiss += 1
+                    else:
+                        #If miss but no eviction, assume write to cache = 0
+                        self.executionCycle += 1
+                        if (not hit):
+                            self.dataCacheMiss += 1
+                        else:
+                            self.dataCacheHit += 1
+                    
+                    self.storeCount += 1
                 elif label == 2:
                     self.computeCycles += int(value)
+                    self.executionCycle += int(value)
