@@ -8,7 +8,6 @@ class Cache:
         self.assoc = assoc
         self.numSets = int(self.size/(self.assoc * self.blockSize))
         self.sets = [memorySet(i) for i in range(self.numSets)]
-        self.clockCycle = 0
         self.mainMem = mainMemory
         
     def loadMemory(self, memAddr):
@@ -20,12 +19,9 @@ class Cache:
     def storeMemory(self, memAddr):
         return
     
-    def computeOp(self, clockCycle):
-        self.clockCycle += clockCycle
-    
     def writeBack(self):
         #Evict first
-        
+
         #Write back the result of eviction into main memory
         self.mainMem.writeBack()
         
