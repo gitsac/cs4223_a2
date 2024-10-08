@@ -1,5 +1,6 @@
 from .sets import memorySet
 from .mainmem import mainMemory
+import math
 
 class Cache:
     def __init__(self, cacheSize, blockSize, assoc, mainMemory: mainMemory):
@@ -11,23 +12,36 @@ class Cache:
         self.clockCycle = 0
         self.mainMem = mainMemory
         
-    def loadMemory(self, memAddr):
-        #If in cache, return + set recency
+    def translateAddr(self, memAddr: str):
+        addrInt = int(memAddr, 16)
+        addrBin = bin(addrInt)[2:]
+        while (len(addrBin) < 32):
+            addrBin = '0' + addrBin
         
-        #If not in cache, we add entry into cache + retrieve from main memory -> Might need to evict least recently used block -> writeback for that
-        return
+        numBitsSetIndex = int(math.log(self.numSets, 2))
+        numBitsOffset = int(math.log(self.blockSize, 2))
+        setNumberBin = addrBin[-(numBitsSetIndex + numBitsOffset - 1):-numBitsOffset]
+        setNumberInt = int(setNumberBin, 2)
+        
+        setTagBin = addrBin[0:-(numBitsSetIndex + numBitsOffset)]
+        setTagInt = int(setTagBin, 2)
+        return setNumberInt, setTagInt
+        
+    def loadMemory(self, memAddr: str):
+        #Process memAddr to get set index + tag #
+        
+        #Set index and set tag returned in integer
+        setIndex, setTag = self.translateAddr(memAddr)
+        
+        #This should return whether it was a hit AND whether any block was evicted in doing so.
+        return self.sets[setIndex].loadMemory(setTag)
+        
     
     def storeMemory(self, memAddr):
-        return
-    
-    def computeOp(self, clockCycle):
-        self.clockCycle += clockCycle
-    
-    def writeBack(self):
-        #Evict first
+        setIndex, setTag = self.translateAddr(memAddr)
         
-        #Write back the result of eviction into main memory
-        self.mainMem.writeBack()
+        #This should also return whether it was a hit in cache AND whether any block was evicted in doing so.
+        return self.sets[setIndex].storeMemory(setTag)
         
         
     
