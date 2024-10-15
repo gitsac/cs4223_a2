@@ -3,12 +3,13 @@ from .mainmem import mainMemory
 import math
 
 class Cache:
-    def __init__(self, cacheSize, blockSize, assoc, mainMemory: mainMemory):
+    def __init__(self, bus, cacheSize, blockSize, assoc, mainMemory: mainMemory):
         self.size = cacheSize
         self.blockSize = blockSize
         self.assoc = assoc
+        self.bus = bus
         self.numSets = int(self.size/(self.assoc * self.blockSize))
-        self.sets = [memorySet(i) for i in range(self.numSets)]
+        self.sets = [memorySet(i, self.assoc) for i in range(self.numSets)]
         self.mainMem = mainMemory
         
     def translateAddr(self, memAddr: str):
@@ -41,3 +42,17 @@ class Cache:
         
         #This should also return whether it was a hit in cache AND whether any block was evicted in doing so.
         return self.sets[setIndex].storeMemory(setTag)
+    
+    # #This function should be called by either load memory or store memory
+    # def privateRead(self, memAddr):
+    #     setIndex, setTag = self.translateAddr(memAddr)
+        
+    #     #Should call sets.transition here.
+        
+    #     #Thereafter, call busRd or busWr
+
+    # #This function should be called by either load memory or store memory
+    # def privateWrite(self, memAddr):
+    #     setIndex, setTag = self.translateAddr(memAddr)
+        
+    #     #Should call sets.transition here

@@ -1,6 +1,7 @@
 import argparse
-from .mainmem import mainMemory
-from .core import Core
+from structures.mainmem import mainMemory
+from structures.core import Core
+from structures.bus import Bus
 
 def main():
     parser = argparse.ArgumentParser()
@@ -21,12 +22,16 @@ def main():
 
     #creating a memory used by all caches
     memory = mainMemory()
+    
+    #creating a bus
+    bus = Bus()
 
     #creating a core
-    core = [Core(cacheSize, blockSize, associativity, memory) for _ in range(1)]
+    core = [Core(bus, int(cacheSize), int(blockSize), int(associativity), memory) for _ in range(1)]
 
+    actualInputFile = inputFile + "/" + inputFile + "_0.data"
     #run input file on first core first
-    core[0].run(inputFile)
+    core[0].run(actualInputFile)
 
 if __name__ == "__main__":
     main()

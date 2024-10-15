@@ -2,13 +2,14 @@ from .cache import Cache
 from .mainmem import mainMemory
 
 class Core:
-    def __init__(self, cacheSize, blockSize, assoc, mainMemory: mainMemory):
+    def __init__(self, bus, cacheSize, blockSize, assoc, mainMemory: mainMemory):
         self.size = cacheSize
         self.blockSize = blockSize
         self.assoc = assoc
         self.mainMem = mainMemory
         self.executionCycle = 0
         self.computeCycles = 0
+        self.bus = bus
         # self.memoryOpCount = 0
         self.loadCount = 0
         self.storeCount = 0
@@ -17,15 +18,16 @@ class Core:
         self.dataCacheMiss = 0
 
         #creating a cache for each core first
-        self.cache = [Cache(self.cacheSize, self.blockSize, self.associativity, mainMemory) for _ in range(1)]
+        self.cache = [Cache(self.bus, self.size, self.blockSize, self.assoc, mainMemory) for _ in range(1)]
 
         #need to attach to bus
 
     def run(self, inputFile):
         #start reading from input file
         with open(inputFile, 'r') as file:
-            for line in file:
-
+            for i, line in enumerate(file):
+                
+                print("instruction: " + str(i))
                 #split by first white space
                 label, value = line.split(maxsplit=1)
 
@@ -65,5 +67,15 @@ class Core:
                     
                     self.storeCount += 1
                 elif label == 2:
-                    self.computeCycles += int(value)
-                    self.executionCycle += int(value)
+                    valueConverted = int(value, 16)
+                    self.computeCycles += int(valueConverted)
+                    self.executionCycle += int(valueConverted)
+                    
+        print("Stats:")
+        print("Overall execution cycles: " + str(self.executionCycle) + " cycles")
+        print("Number of compute cycles: " + str(self.computeCycles) + " cycles")
+        print("Number of load instructions: " + str(self.loadCount) + " instructions")
+        print("Number of store instructions: " + str(self.storeCount) + " instructions")
+        print("Number of idle cycles: " + str(self.idleCycles) + " cycles")
+        print("Number of cache hits: " + str(self.dataCacheHit) + " hits")
+        print("Number of cache misses: " + str(self.dataCacheMiss) + " misses")
