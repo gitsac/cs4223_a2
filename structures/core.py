@@ -2,7 +2,8 @@ from .cache import Cache
 from .mainmem import mainMemory
 
 class Core:
-    def __init__(self, bus, cacheSize, blockSize, assoc, mainMemory: mainMemory):
+    def __init__(self, coreID, bus, cacheSize, blockSize, assoc, mainMemory: mainMemory):
+        self.coreID = coreID
         self.size = cacheSize
         self.blockSize = blockSize
         self.assoc = assoc
@@ -17,7 +18,7 @@ class Core:
         self.dataCacheMiss = 0
 
         #creating a cache for each core first
-        self.cache = [Cache(self.bus, self.size, self.blockSize, self.assoc, mainMemory) for _ in range(1)]
+        self.cache = [Cache(self.coreID, self.bus, self.size, self.blockSize, self.assoc, mainMemory) for _ in range(1)]
 
         #need to attach to bus
 
@@ -26,9 +27,9 @@ class Core:
         with open(inputFile, 'r') as file:
             for i, line in enumerate(file):
                 
-                #For testing only
-                if (i >= 100000):
-                    break
+                # #For testing only
+                # if (i >= 100000):
+                #     break
                 print("instruction: " + str(i))
                 #split by first white space
                 label, value = line.split(maxsplit=1)

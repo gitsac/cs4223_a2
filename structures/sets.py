@@ -1,6 +1,3 @@
-from .blocks import Blocks
-from .mainmem import mainMemory
-
 class memorySet:
     def __init__(self, setID, assoc) -> None:
         self.setID = setID
@@ -13,6 +10,7 @@ class memorySet:
     #return whether is hit, any evict
     def loadMemory(self, tagNum):
         #Check if tagNum in dictionary - if yes, just use blockRecency.indexOf to find index, remove it, then push it to index 0
+
         if tagNum in self.blocks:
             currIndex = self.blockRecency.index(tagNum)
     
@@ -26,7 +24,6 @@ class memorySet:
             if len(self.blocks) == self.assoc:
                 tagNumToRemove = self.blockRecency[-1]
                 del self.blockRecency[-1]
-                # del self.blocks[tagNumToRemove]
                 self.blocks.remove(tagNumToRemove)
 
                 #mainMemory.writeBack(dataToFlush)
@@ -57,7 +54,6 @@ class memorySet:
             if len(self.blocks) == self.assoc:
                 tagNumToRemove = self.blockRecency[-1]
                 del self.blockRecency[-1]
-                # del self.blocks[tagNumToRemove]
                 self.blocks.remove(tagNumToRemove)
 
                 #mainMemory.writeBack(dataToFlush)

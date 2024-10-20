@@ -27,7 +27,8 @@ def main():
     bus = Bus()
 
     #creating a core
-    core = [Core(bus, int(cacheSize), int(blockSize), int(associativity), memory) for _ in range(1)]
+    for i in range(1):
+        core = [Core(i, bus, int(cacheSize), int(blockSize), int(associativity), memory) for _ in range(1)]
 
     actualInputFile = inputFile + "/" + inputFile + "_0.data"
     #run input file on first core first
@@ -44,6 +45,11 @@ def main():
     print("Number of idle cycles: " + str(singleCore.idleCycles) + " cycles")
     print("Number of cache hits: " + str(singleCore.dataCacheHit) + " hits")
     print("Number of cache misses: " + str(singleCore.dataCacheMiss) + " misses")
+    print("Data traffic: " + str(bus.busRd + bus.busRdX))
+    print("Number of invalidations/updates: " + str(0))
+    print("Number of accesses to private data: ") 
+    print("Number of accesses to shared data: ")
+
 
 if __name__ == "__main__":
     main()

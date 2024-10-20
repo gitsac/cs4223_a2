@@ -1,9 +1,11 @@
 from .sets import memorySet
 from .mainmem import mainMemory
+from .bus import Bus
 import math
 
 class Cache:
-    def __init__(self, bus, cacheSize, blockSize, assoc, mainMemory: mainMemory):
+    def __init__(self, cacheID, bus: Bus, cacheSize, blockSize, assoc, mainMemory: mainMemory):
+        self.cacheID = cacheID
         self.size = cacheSize
         self.blockSize = blockSize
         self.assoc = assoc
@@ -34,14 +36,29 @@ class Cache:
         setIndex, setTag = self.translateAddr(memAddr)
         
         #This should return whether it was a hit AND whether any block was evicted in doing so.
-        return self.sets[setIndex].loadMemory(setTag)
+        hit, eviction = self.sets[setIndex].loadMemory(setTag)
+
+        #check if there was a hit, if yes, no need for bus transaction, else, call busRd
+        if (not hit):
+            self.bus.busReadShared(memAddr, self.cacheID)
+        return hit, eviction
         
     
     def storeMemory(self, memAddr):
         setIndex, setTag = self.translateAddr(memAddr)
         
         #This should also return whether it was a hit in cache AND whether any block was evicted in doing so.
-        return self.sets[setIndex].storeMemory(setTag)
+        hit, eviction = self.sets[setIndex].storeMemory(setTag)
+
+        #Must call for exclusive bus read regardless, due to the fact that a store changes values
+        self.bus.busReadExclusive(memAddr, self.cacheID)
+        return hit, eviction
+    
+    def receiveBusReadShared(self, memAddr):
+        pass
+
+    def receiveBusReadExclusive(self, memAddr):
+        pass
     
     # #This function should be called by either load memory or store memory
     # def privateRead(self, memAddr):
