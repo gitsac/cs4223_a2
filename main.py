@@ -45,7 +45,7 @@ def main():
     print("Number of idle cycles: " + str(singleCore.idleCycles) + " cycles")
     print("Number of cache hits: " + str(singleCore.dataCacheHit) + " hits")
     print("Number of cache misses: " + str(singleCore.dataCacheMiss) + " misses")
-    print("Data traffic: " + str(bus.busRd + bus.busRdX))
+    print("Data traffic: " + str((bus.busRd + bus.busRdX) * 4) + "B")
     print("Number of invalidations/updates: " + str(0))
     print("Number of accesses to private data: ") 
     print("Number of accesses to shared data: ")
