@@ -31,7 +31,19 @@ def main():
 
     actualInputFile = inputFile + "/" + inputFile + "_0.data"
     #run input file on first core first
+
     core[0].run(actualInputFile)
+
+    singleCore = core[0]
+    # Output statistics from main instead of core.
+    print("Stats:")
+    print("Overall execution cycles: " + str(singleCore.executionCycle) + " cycles")
+    print("Number of compute cycles: " + str(singleCore.computeCycles) + " cycles")
+    print("Number of load instructions: " + str(singleCore.loadCount) + " instructions")
+    print("Number of store instructions: " + str(singleCore.storeCount) + " instructions")
+    print("Number of idle cycles: " + str(singleCore.idleCycles) + " cycles")
+    print("Number of cache hits: " + str(singleCore.dataCacheHit) + " hits")
+    print("Number of cache misses: " + str(singleCore.dataCacheMiss) + " misses")
 
 if __name__ == "__main__":
     main()

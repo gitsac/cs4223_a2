@@ -10,7 +10,6 @@ class Core:
         self.executionCycle = 0
         self.computeCycles = 0
         self.bus = bus
-        # self.memoryOpCount = 0
         self.loadCount = 0
         self.storeCount = 0
         self.idleCycles = 0
@@ -27,6 +26,9 @@ class Core:
         with open(inputFile, 'r') as file:
             for i, line in enumerate(file):
                 
+                #For testing only
+                if (i >= 100000):
+                    break
                 print("instruction: " + str(i))
                 #split by first white space
                 label, value = line.split(maxsplit=1)
@@ -70,12 +72,3 @@ class Core:
                     valueConverted = int(value, 16)
                     self.computeCycles += int(valueConverted)
                     self.executionCycle += int(valueConverted)
-                    
-        print("Stats:")
-        print("Overall execution cycles: " + str(self.executionCycle) + " cycles")
-        print("Number of compute cycles: " + str(self.computeCycles) + " cycles")
-        print("Number of load instructions: " + str(self.loadCount) + " instructions")
-        print("Number of store instructions: " + str(self.storeCount) + " instructions")
-        print("Number of idle cycles: " + str(self.idleCycles) + " cycles")
-        print("Number of cache hits: " + str(self.dataCacheHit) + " hits")
-        print("Number of cache misses: " + str(self.dataCacheMiss) + " misses")
