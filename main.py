@@ -46,9 +46,10 @@ def main():
     print("Number of cache hits: " + str(singleCore.dataCacheHit) + " hits")
     print("Number of cache misses: " + str(singleCore.dataCacheMiss) + " misses")
     print("Data traffic: " + str((bus.busRd + bus.busRdX) * 4) + "B")
-    print("Number of invalidations/updates: " + str(0))
-    print("Number of accesses to private data: ") 
-    print("Number of accesses to shared data: ")
+    print("Number of invalidations: " + str(bus.invalidations))
+    print("Number of updates: " + str(bus.updates))
+    print("Number of accesses to private data: " + str(bus.privateDataAccesses)) 
+    print("Number of accesses to shared data: " + str(bus.sharedDataAccesses))
 
 
 if __name__ == "__main__":

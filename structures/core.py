@@ -55,17 +55,19 @@ class Core:
                     hit, evicted = self.cache[0].storeMemory(value)
                     if (not hit and evicted):
                         #if cache miss + eviction occurred -> write back + eviction = 100 + 100 = 200. +1 for L1 cache check
-                        self.executionCycle += 101
+                        self.executionCycle += 201
                         
                         #Assume that store eviction 100 cycles counts as idle - to check with prof
-                        self.idleCycles += 100
+                        self.idleCycles += 200
                         self.dataCacheMiss += 1
                     else:
                         #If miss but no eviction, assume write to cache = 0
-                        self.executionCycle += 1
                         if (not hit):
+                            self.executionCycle += 101
+                            self.idleCycles += 100
                             self.dataCacheMiss += 1
                         else:
+                            self.executionCycle += 1
                             self.dataCacheHit += 1
                     
                     self.storeCount += 1
