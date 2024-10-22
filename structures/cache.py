@@ -11,7 +11,7 @@ class Cache:
         self.assoc = assoc
         self.bus = bus
         self.numSets = int(self.size/(self.assoc * self.blockSize))
-        self.sets = [memorySet(i, self.assoc) for i in range(self.numSets)]
+        self.sets = [memorySet(i, self.assoc, blockSize) for i in range(self.numSets)]
         self.mainMem = mainMemory
         
     def translateAddr(self, memAddr: str):
