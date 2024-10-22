@@ -27,10 +27,10 @@ class Core:
         with open(inputFile, 'r') as file:
             for i, line in enumerate(file):
                 
-                #For testing only
-                if (i >= 100000):
-                    break
-                print("instruction: " + str(i))
+                # #For testing only
+                # if (i >= 100000):
+                #     break
+                # print("instruction: " + str(i))
                 #split by first white space
                 label, value = line.split(maxsplit=1)
 

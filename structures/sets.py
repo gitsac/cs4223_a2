@@ -15,7 +15,6 @@ class memorySet:
         #Check if tagNum in dictionary - if yes, just use blockRecency.indexOf to find index, remove it, then push it to index 0
 
         tagNumInDict = any(elem.blockId == tagNum for elem in self.blocks)
-        print(tagNumInDict)
         if (tagNumInDict):
             block = Block(self.blockSize, tagNum)
             for elem in self.blocks:
@@ -90,7 +89,7 @@ class memorySet:
 
                 self.blockRecency.insert(0, toInsert)
                 self.blocks.add(toInsert)
-                return False, False          
+                return False, False
         
         #Then, access main memory to WRITE this block back, and add to the front of blockrecency + add to dictionary        
         
