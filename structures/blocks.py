@@ -4,3 +4,4 @@ class Block:
         self.blockId = blockID
         self.valid = True
         self.dirty = 0
+        self.state = 'I'
