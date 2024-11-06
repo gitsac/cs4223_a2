@@ -12,20 +12,91 @@ class Bus:
     def attachCache(self, cache):
         self.attachedCache.append(cache)
 
-    def busReadShared(self, memAddr, cacheNum):
+    def mesiBusRd(self, memAddr, cacheNum):
+        currCache = self.attachedCache[cacheNum]
         self.busRd += 1
-        for i, cache in self.attachedCache:
+        self.traffic += currCache.blockSize
+        block = None
+        setIndex, setTag = currCache.translateAddr(memAddr)
+
+        for i, cache in enumerate(self.attachedCache):
             if (i == cacheNum):
                 continue
-            cache.receiveBusShared(memAddr)
 
-        return
+            if (cache.blockInCache(memAddr)):
+                for currBlock in cache.sets[setIndex].blocks:
+                    if currBlock.blockId == setTag:
+                        block = currBlock
+
+                        if currBlock.state == 'M':
+                            self.privateDataAccesses += 1
+                        elif currBlock.state == 'E':
+                            self.privateDataAccesses += 1
+                        elif currBlock.state == 'S':
+                            self.sharedDataAccesses += 1
+
+                    currBlock.state = 'S'
+
+        if block: 
+            for i, cache in enumerate(self.attachedCache):
+                if (i == cacheNum):
+                    for currBlock in cache.sets[setIndex].blocks:
+                        if currBlock.blockId == setTag:
+                            currBlock.state = 'S'
+            
+            return 2 * cache.blockSize / 4 
+        else: 
+            return 100
+
     
-    def busReadExclusive(self, memAddr, cacheNum):
-        self.busRdX += 1
-        for i, cache in self.attachedCache:
-            if (i == cacheNum):
-                continue
-            cache.receiveBusSharedExclusive(memAddr)
+    def mesiBusRdX(self, memAddr, cacheNum, prevState):
+        currCache = self.attachedCache[cacheNum]
+        self.busRd += 1
+        self.traffic += currCache.blockSize
+        setIndex, setTag = currCache.translateAddr(memAddr)
 
-        return
+        #Invalidate all caches with the same data from S to I
+        if prevState == 'S':
+            for i, cache in enumerate(self.attachedCache):
+                if (i == cacheNum):
+                    continue
+                    
+                if (cache.blockInCache(memAddr)):
+                    self.invalidations += 1
+                    self.sharedDataAccesses += 1
+
+                    for currBlock in cache.sets[setIndex].blocks:
+                        if currBlock.blockId == setTag:
+                            currBlock.state = 'I'
+            return 0
+
+        elif prevState == 'I':
+            block = None
+
+            for i, cache in enumerate(self.attachedCache):
+                if (i == cacheNum):
+                    continue
+
+                if (cache.blockInCache(memAddr)):
+                    for currBlock in cache.sets[setIndex].blocks:
+                        p
+                        if currBlock.blockId == setTag:
+                            block = currBlock
+
+                            if currBlock.state == 'M':
+                                self.privateDataAccesses += 1
+                            elif currBlock.state == 'E':
+                                self.privateDataAccesses += 1
+                            elif currBlock.state == 'S':
+                                self.sharedDataAccesses += 1
+
+                        currBlock.state = 'I'
+                        self.invalidations += 1
+
+            if block:
+                return 2 * cache.blockSize / 4 
+            else: 
+                return 100
+
+    def mesiFlush(self):
+        self.traffic += self.attachedCache[0].blockSize

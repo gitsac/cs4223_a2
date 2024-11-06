@@ -28,6 +28,11 @@ class Cache:
         setTagBin = addrBin[0:-(numBitsSetIndex + numBitsOffset)]
         setTagInt = int(setTagBin, 2)
         return setNumberInt, setTagInt
+    
+    #Check if block exists in cache
+    def blockInCache(self, memAddr):
+        setIndex, setTag = self.translateAddr(memAddr)
+        return self.sets[setIndex].blockInSet(setTag)
         
     def loadMemory(self, memAddr: str):
         #Process memAddr to get set index + tag #
@@ -53,12 +58,6 @@ class Cache:
         #Must call for exclusive bus read regardless, due to the fact that a store changes values
         self.bus.busReadExclusive(memAddr, self.cacheID)
         return hit, eviction
-    
-    def receiveBusReadShared(self, memAddr):
-        pass
-
-    def receiveBusReadExclusive(self, memAddr):
-        pass
     
     # #This function should be called by either load memory or store memory
     # def privateRead(self, memAddr):
