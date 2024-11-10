@@ -3,7 +3,7 @@ from .mainmem import mainMemory
 from .bus import Bus
 
 class Core:
-    def __init__(self, coreID, bus, cacheSize, blockSize, assoc, mainMemory: mainMemory, protocol):
+    def __init__(self, coreID, bus: Bus, cacheSize, blockSize, assoc, mainMemory: mainMemory, protocol):
         self.coreID = coreID
         self.size = cacheSize
         self.blockSize = blockSize
