@@ -36,9 +36,9 @@ class Core:
             for i, line in enumerate(file):
                 
                  #For testing only
-                if (i >= 100000):
+                if (i >= 50000):
                     break
-                print("instruction: " + str(i))
+                # print(str(self.coreID) + ": " + "instruction: " + str(i))
                 #split by first white space
                 label, value = line.split(maxsplit=1)
 

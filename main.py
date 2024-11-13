@@ -2,6 +2,7 @@ import argparse
 from structures.mainmem import mainMemory
 from structures.core import Core
 from structures.bus import Bus
+import threading
 
 def main():
     parser = argparse.ArgumentParser()
@@ -35,10 +36,24 @@ def main():
     actualInputFile3 = inputFile + "/" + inputFile + "_3.data"
     #run input file on first core first
 
-    core[0].run(actualInputFile0)
-    core[1].run(actualInputFile1)
-    core[2].run(actualInputFile2)
-    core[3].run(actualInputFile3)
+    # core[0].run(actualInputFile0)
+    # core[1].run(actualInputFile1)
+    # core[2].run(actualInputFile2)
+    # core[3].run(actualInputFile3)
+    t0 = threading.Thread(target=core[0].run, args=(actualInputFile0,))
+    t1 = threading.Thread(target=core[1].run, args=(actualInputFile1,))
+    t2 = threading.Thread(target=core[2].run, args=(actualInputFile2,))
+    t3 = threading.Thread(target=core[3].run, args=(actualInputFile3,))
+
+    threading.Event()
+    
+    threads = [t0, t1, t2, t3]
+
+    for thread in threads:
+        thread.start()
+
+    for thread in threads:
+        thread.join()
 
     def printStats(singleCore: Core):
         print("Core " + str(singleCore.coreID) + " Number of compute cycles: " + str(singleCore.computeCycles) + " cycles")
@@ -51,7 +66,7 @@ def main():
     maxExecCycle = max(core, key=lambda core: core.executionCycle)
 
     print("Stats:")
-    print("Overall execution cycles: " + str(maxExecCycle) + " cycles")
+    print("Overall execution cycles: " + str(maxExecCycle.executionCycle) + " cycles")
     for i in range(4):
         printStats(core[i])
 

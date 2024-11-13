@@ -1,3 +1,5 @@
+from .fairLock import FCFSLock
+
 class Bus:
     def __init__(self):
         self.attachedCache = []
@@ -8,11 +10,14 @@ class Bus:
         self.updates = 0
         self.privateDataAccesses = 0
         self.sharedDataAccesses = 0
+        self.lock = FCFSLock()
+
         
     def attachCache(self, cache):
         self.attachedCache.append(cache)
 
     def mesiBusRd(self, memAddr, cacheNum):
+        self.lock.acquire()
         currCache = self.attachedCache[cacheNum]
         self.busRd += 1
         self.traffic += currCache.blockSize
@@ -44,12 +49,15 @@ class Bus:
                         if currBlock.blockId == setTag:
                             currBlock.state = 'S'
             
+            self.lock.release()
             return 2 * cache.blockSize / 4 
         else: 
+            self.lock.release()
             return 100
 
     
     def mesiBusRdX(self, memAddr, cacheNum, prevState):
+        self.lock.acquire()
         currCache = self.attachedCache[cacheNum]
         self.busRd += 1
         self.traffic += currCache.blockSize
@@ -68,6 +76,7 @@ class Bus:
                     for currBlock in cache.sets[setIndex].blocks:
                         if currBlock.blockId == setTag:
                             currBlock.state = 'I'
+            self.lock.release()
             return 0
 
         elif prevState == 'I':
@@ -93,14 +102,19 @@ class Bus:
                         self.invalidations += 1
 
             if block:
+                self.lock.release()
                 return 2 * cache.blockSize / 4 
-            else: 
+            else:
+                self.lock.release() 
                 return 100
 
     def mesiFlush(self):
+        self.lock.acquire()
         self.traffic += self.attachedCache[0].blockSize
+        self.lock.release()
 
     def dragonBusRd(self, memAddr, cacheNum):
+        self.lock.acquire()
         currCache = self.attachedCache[cacheNum]
         self.busRd += 1
         self.traffic += currCache.blockSize
@@ -136,12 +150,15 @@ class Bus:
                         if currBlock.blockId == setTag:
                             currBlock.state = 'Sc'
 
+            self.lock.release()
             return 2 * cache.blockSize / 4 
         else:
+            self.lock.release()
             return 100
 
 
     def dragonBusUpd(self, memAddr, cacheNum):
+        self.lock.acquire()
         currCache = self.attachedCache[cacheNum]
         self.busRd += 1
         self.traffic += currCache.blockSize
@@ -165,6 +182,7 @@ class Bus:
 
         #Since block != None, some other cache must be holding it, thus we cannot allow current cache to be M -> must be downgraded to Sm
         if (block):
+            self.updates += 1
             for i, cache in enumerate(self.attachedCache):
                 if (i == cacheNum):
                     for currBlock in cache.sets[setIndex].blocks:
@@ -177,8 +195,11 @@ class Bus:
             #Else, fetched from memory
             amtDataExchanged += 100
 
+        self.lock.release()
         return amtDataExchanged
     
     #Flush is used for transition from M -> Sm. We will simply use block size as the flushed data, no real need to send data around.
     def dragonFlush(self):
+        self.lock.acquire()
         self.traffic += self.attachedCache[0].blockSize
+        self.lock.release()
