@@ -1,8 +1,6 @@
-from .cache import Cache
-
 class Bus:
     def __init__(self):
-        self.attachedCache = [Cache]
+        self.attachedCache = []
         self.traffic = 0
         self.busRd = 0
         self.busRdX = 0
@@ -103,7 +101,7 @@ class Bus:
         self.traffic += self.attachedCache[0].blockSize
 
     def dragonBusRd(self, memAddr, cacheNum):
-        currCache: Cache = self.attachedCache[cacheNum]
+        currCache = self.attachedCache[cacheNum]
         self.busRd += 1
         self.traffic += currCache.blockSize
         block = None
@@ -140,16 +138,11 @@ class Bus:
 
             return 2 * cache.blockSize / 4 
         else:
-            # for i, cache in enumerate(self.attachedCache):
-            #     if (i == cacheNum):
-            #         for currBlock in cache.sets[setIndex].blocks:
-            #             if currBlock.blockId == setTag:
-            #                 currBlock.state = 'E'
             return 100
 
 
     def dragonBusUpd(self, memAddr, cacheNum):
-        currCache: Cache = self.attachedCache[cacheNum]
+        currCache = self.attachedCache[cacheNum]
         self.busRd += 1
         self.traffic += currCache.blockSize
         block = None
@@ -177,13 +170,13 @@ class Bus:
                     for currBlock in cache.sets[setIndex].blocks:
                         if currBlock.blockId == setTag:
                             currBlock.state = 'Sm'
+            
+            #This represents data transfer from one of the other block to my current block
+            amtDataExchanged += (2 * cache.blockSize / 4)
         else:
-            for i, cache in enumerate(self.attachedCache):
-                if (i == cacheNum):
-                    for currBlock in cache.sets[setIndex].blocks:
-                        if currBlock.blockId == setTag:
-                            currBlock.state = 'E'
-                        
+            #Else, fetched from memory
+            amtDataExchanged += 100
+
         return amtDataExchanged
     
     #Flush is used for transition from M -> Sm. We will simply use block size as the flushed data, no real need to send data around.

@@ -163,13 +163,12 @@ class memorySet:
                     block = elem
                     break
                 
-            prevState = block.state
             block.state = 'M'
 
             currIndex = self.blockRecency.index(block)
             del self.blockRecency[currIndex]
             self.blockRecency.insert(0, block)
-            return True, False, prevState
+            return True, False
 
         #If not in dictionary, if dictionary is full, evict lru + write back this evicted entry into memory
         else:
@@ -184,7 +183,7 @@ class memorySet:
                 self.blocks.add(toInsert)
 
                 #Before returning that there was an eviction - we check if the evicted block is dirty. If yes, then we return that there was an eviction. Else, there is no need to tell them there is an eviction - no need to write back to main memory!
-                if (blockToRemove.state == 'M'):
+                if (blockToRemove.state == 'M' or blockToRemove.state == 'Sm'):
                     return False, True
                 
                 return False, False

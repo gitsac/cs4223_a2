@@ -1,4 +1,5 @@
 from .mesiCache import MesiCache
+from .dragonCache import DragonCache
 from .mainmem import mainMemory
 from .bus import Bus
 
@@ -21,6 +22,9 @@ class Core:
         #creating a cache for each core first
         if protocol == "MESI":
             self.cache = [MesiCache(self.coreID, self.bus, self.size, self.blockSize, self.assoc, mainMemory) for _ in range(1)]
+        elif (protocol == 'DRAGON'):
+            self.cache = [DragonCache(self.coreID, self.bus, self.size, self.blockSize, self.assoc, mainMemory) for _ in range(1)]
+
         
         self.bus.attachCache(self.cache[0])
 
