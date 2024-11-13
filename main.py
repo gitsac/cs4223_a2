@@ -27,11 +27,41 @@ def main():
     bus = Bus()
 
     #creating a core
-    core = [Core(bus, int(cacheSize), int(blockSize), int(associativity), memory) for _ in range(1)]
+    core = [Core(i, bus, int(cacheSize), int(blockSize), int(associativity), memory, protocol) for i in range(4)]
 
-    actualInputFile = inputFile + "/" + inputFile + "_0.data"
+    actualInputFile0 = inputFile + "/" + inputFile + "_0.data"
+    actualInputFile1 = inputFile + "/" + inputFile + "_1.data"
+    actualInputFile2 = inputFile + "/" + inputFile + "_2.data"
+    actualInputFile3 = inputFile + "/" + inputFile + "_3.data"
     #run input file on first core first
-    core[0].run(actualInputFile)
+
+    core[0].run(actualInputFile0)
+    core[1].run(actualInputFile1)
+    core[2].run(actualInputFile2)
+    core[3].run(actualInputFile3)
+
+    def printStats(singleCore: Core):
+        print("Core " + str(singleCore.coreID) + " Number of compute cycles: " + str(singleCore.computeCycles) + " cycles")
+        print("Core " + str(singleCore.coreID) + " Number of load instructions: " + str(singleCore.loadCount) + " instructions")
+        print("Core " + str(singleCore.coreID) + " Number of store instructions: " + str(singleCore.storeCount) + " instructions")
+        print("Core " + str(singleCore.coreID) + " Number of idle cycles: " + str(singleCore.idleCycles) + " cycles")
+        print("Core " + str(singleCore.coreID) + " Number of cache hits: " + str(singleCore.dataCacheHit) + " hits")
+        print("Core " + str(singleCore.coreID) + " Number of cache misses: " + str(singleCore.dataCacheMiss) + " misses")
+    
+    maxExecCycle = max(core, key=lambda core: core.executionCycle)
+
+    print("Stats:")
+    print("Overall execution cycles: " + str(maxExecCycle) + " cycles")
+    for i in range(4):
+        printStats(core[i])
+
+    print("Data traffic: " + str(bus.traffic) + "B")
+    print("Number of invalidations: " + str(bus.invalidations))
+    print("Number of updates: " + str(bus.updates))
+    print("Number of accesses to private data: " + str(bus.privateDataAccesses)) 
+    print("Number of accesses to shared data: " + str(bus.sharedDataAccesses))
+    # Output statistics from main instead of core.
+
 
 if __name__ == "__main__":
     main()
