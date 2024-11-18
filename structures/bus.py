@@ -11,6 +11,7 @@ class Bus:
         self.privateDataAccesses = 0
         self.sharedDataAccesses = 0
         self.lock = FCFSLock()
+        self.owners = set()
 
         
     def attachCache(self, cache):
@@ -41,6 +42,9 @@ class Bus:
                             self.sharedDataAccesses += 1
 
                     currBlock.state = 'S'
+
+                    if block:
+                        break
 
         if block: 
             for i, cache in enumerate(self.attachedCache):
@@ -113,6 +117,107 @@ class Bus:
         self.traffic += self.attachedCache[0].blockSize
         self.lock.release()
 
+    def moesiBusRd(self, memAddr, cacheNum):
+        self.lock.acquire()
+        currCache = self.attachedCache[cacheNum]
+        self.busRd += 1
+        self.traffic += currCache.blockSize
+        block = None
+        setIndex, setTag = currCache.translateAddr(memAddr)
+
+        # Check through my set of owners
+        if (setTag in self.owners):
+            block = True
+
+        if not block:
+            for i, cache in enumerate(self.attachedCache):
+                if (i == cacheNum):
+                    continue
+
+                if (cache.blockInCache(memAddr)):
+                    for currBlock in cache.sets[setIndex].blocks:
+                        if currBlock.blockId == setTag:
+                            block = currBlock
+
+                            if currBlock.state == 'M':
+                                self.privateDataAccesses += 1
+                            elif currBlock.state == 'E':
+                                self.privateDataAccesses += 1
+
+                        currBlock.state = 'O'
+                        self.owners.add(setTag)
+
+        if block: 
+            for i, cache in enumerate(self.attachedCache):
+                if (i == cacheNum):
+                    for currBlock in cache.sets[setIndex].blocks:
+                        if currBlock.blockId == setTag:
+                            currBlock.state = 'S'
+            
+            self.lock.release()
+            return 2 * cache.blockSize / 4 
+        else: 
+            self.lock.release()
+            return 100
+        
+    
+    def moesiBusRdX(self, memAddr, cacheNum, prevState):
+        self.lock.acquire()
+        currCache = self.attachedCache[cacheNum]
+        self.busRd += 1
+        self.traffic += currCache.blockSize
+        setIndex, setTag = currCache.translateAddr(memAddr)
+
+        #Invalidate all caches with the same data from S/O to I
+        if prevState == 'S' or prevState == 'O':
+            for i, cache in enumerate(self.attachedCache):
+                if (i == cacheNum):
+                    continue
+                    
+                if (cache.blockInCache(memAddr)):
+                    self.invalidations += 1
+                    self.sharedDataAccesses += 1
+
+                    for currBlock in cache.sets[setIndex].blocks:
+                        if currBlock.blockId == setTag:
+                            currBlock.state = 'I'
+            self.lock.release()
+            return 0
+
+        elif prevState == 'I':
+            block = None
+
+            for i, cache in enumerate(self.attachedCache):
+                if (i == cacheNum):
+                    continue
+
+                if (cache.blockInCache(memAddr)):
+                    for currBlock in cache.sets[setIndex].blocks:
+                        if currBlock.blockId == setTag:
+                            block = currBlock
+
+                            if currBlock.state == 'M':
+                                self.privateDataAccesses += 1
+                            elif currBlock.state == 'E':
+                                self.privateDataAccesses += 1
+                            elif currBlock.state == 'S' or currBlock.state == 'O':
+                                self.sharedDataAccesses += 1
+
+                        currBlock.state = 'I'
+                        self.invalidations += 1
+
+            if block:
+                self.lock.release()
+                return 2 * cache.blockSize / 4 
+            else:
+                self.lock.release() 
+                return 100
+            
+    def moesiFlush(self):
+        self.lock.acquire()
+        self.traffic += self.attachedCache[0].blockSize
+        self.lock.release()
+
     def dragonBusRd(self, memAddr, cacheNum):
         self.lock.acquire()
         currCache = self.attachedCache[cacheNum]
@@ -141,6 +246,9 @@ class Bus:
 
                         elif currBlock.state == 'Sc' or currBlock.state == 'Sm':
                             self.sharedDataAccesses += 1
+                    
+                    if block:
+                        break
 
         #if we took from a fellow cache, we will set the state on current cache to Sc, else we will set it to E as it is the first to bring this block into cache. Return corresponding cycle.
         if (block):

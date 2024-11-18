@@ -14,7 +14,7 @@ def toRun(outputFile, paramName, paramSize, protocol, file):
     else:
         blockSize = paramSize
         
-    process = subprocess.run(["python", "main.py", protocol, file, str(cacheSize), str(assoc), str(blockSize)], capture_output=True, text=True, check=True)
+    process = subprocess.run(["python3", "main.py", protocol, file, str(cacheSize), str(assoc), str(blockSize)], capture_output=True, text=True, check=True)
     with open(outputFile, 'a') as f:
         f.write("=== Output ===\n")
         f.write("STDOUT:\n")
@@ -38,11 +38,11 @@ def main():
 
     sizes = []
     if (param == "cs"):
-        sizes = [512, 1024, 2048]
+        sizes = [128, 512, 1024, 2048, 8192]
     elif (param == "as"):
-        sizes = [1, 2, 4]
+        sizes = [1, 2, 4, 16, 64]
     elif (param == "bs"):
-        sizes = [16, 32, 64]
+        sizes = [4, 16, 64, 128 256]
     else:
         print("Invalid argument")
 

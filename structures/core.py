@@ -1,6 +1,7 @@
 from .mesiCache import MesiCache
 from .dragonCache import DragonCache
 from .mainmem import mainMemory
+from .moesiCache import MoesiCache
 from .bus import Bus
 
 class Core:
@@ -24,6 +25,8 @@ class Core:
             self.cache = [MesiCache(self.coreID, self.bus, self.size, self.blockSize, self.assoc, mainMemory) for _ in range(1)]
         elif (protocol == 'DRAGON'):
             self.cache = [DragonCache(self.coreID, self.bus, self.size, self.blockSize, self.assoc, mainMemory) for _ in range(1)]
+        elif (protocol == 'MOESI'):
+            self.cache = [MoesiCache(self.coreID, self.bus, self.size, self.blockSize, self.assoc, mainMemory) for _ in range(1)]
 
         
         self.bus.attachCache(self.cache[0])
@@ -35,10 +38,10 @@ class Core:
         with open(inputFile, 'r') as file:
             for i, line in enumerate(file):
                 
-                 #For testing only
-                if (i >= 50000):
-                    break
-                # print(str(self.coreID) + ": " + "instruction: " + str(i))
+                #For testing only
+                #if (i >= 50000):
+                #    break
+                #print(str(self.coreID) + ": " + "instruction: " + str(i))
                 #split by first white space
                 label, value = line.split(maxsplit=1)
 
