@@ -56,6 +56,7 @@ def main():
         thread.join()
 
     def printStats(singleCore: Core):
+        print("Core " + str(singleCore.coreID) + " Number of execution cycles: " + str(singleCore.executionCycle) + " cycles")
         print("Core " + str(singleCore.coreID) + " Number of compute cycles: " + str(singleCore.computeCycles) + " cycles")
         print("Core " + str(singleCore.coreID) + " Number of load instructions: " + str(singleCore.loadCount) + " instructions")
         print("Core " + str(singleCore.coreID) + " Number of store instructions: " + str(singleCore.storeCount) + " instructions")
