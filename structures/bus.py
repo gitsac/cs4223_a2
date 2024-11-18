@@ -170,6 +170,7 @@ class Bus:
 
         #Invalidate all caches with the same data from S/O to I
         if prevState == 'S' or prevState == 'O':
+            self.owners.discard(setTag)
             for i, cache in enumerate(self.attachedCache):
                 if (i == cacheNum):
                     continue
@@ -200,8 +201,11 @@ class Bus:
                                 self.privateDataAccesses += 1
                             elif currBlock.state == 'E':
                                 self.privateDataAccesses += 1
-                            elif currBlock.state == 'S' or currBlock.state == 'O':
+                            elif currBlock.state == 'S':
                                 self.sharedDataAccesses += 1
+                            elif currBlock.state == 'O':
+                                self.sharedDataAccesses += 1
+                                self.owners.discard(setTag)
 
                         currBlock.state = 'I'
                         self.invalidations += 1
