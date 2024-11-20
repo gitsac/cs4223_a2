@@ -50,7 +50,7 @@ class Bus:
                     currBlock.state = 'S'
             
             self.lock.release()
-            return 2 * cache.blockSize / 4 
+            return 2 * currCache.blockSize / 4 
         else: 
             self.lock.release()
             return 100
@@ -103,7 +103,7 @@ class Bus:
             if block:
                 self.invalidations += 1
                 self.lock.release()
-                return 2 * cache.blockSize / 4 
+                return 2 * currCache.blockSize / 4 
             else:
                 self.lock.release() 
                 return 100
@@ -151,7 +151,7 @@ class Bus:
                     currBlock.state = 'S'
             
             self.lock.release()
-            return 2 * cache.blockSize / 4 
+            return 2 * currCache.blockSize / 4 
         else: 
             self.lock.release()
             return 100
@@ -206,7 +206,7 @@ class Bus:
             if block:
                 self.invalidations += 1
                 self.lock.release()
-                return 2 * cache.blockSize / 4 
+                return 2 * currCache.blockSize / 4 
             else:
                 self.lock.release() 
                 return 100
