@@ -42,12 +42,12 @@ def main():
     elif (param == "as"):
         sizes = [1, 2, 4, 16, 64]
     elif (param == "bs"):
-        sizes = [4, 16, 64, 128 256]
+        sizes = [4, 16, 64, 128, 256]
     else:
         print("Invalid argument")
 
     for size in sizes:
-        toRun("./outputs/" + protocol + "_" + param  + "_" + "outputs.txt", param, size, protocol, dataSet)
+        toRun("./outputs/" + protocol + "_" + param  + "_" + dataSet + "_" "outputs.txt", param, size, protocol, dataSet)
 
 if __name__ == "__main__":
     main()

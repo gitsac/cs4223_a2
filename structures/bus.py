@@ -12,7 +12,6 @@ class Bus:
         self.sharedDataAccesses = 0
         self.lock = FCFSLock()
         self.owners = set()
-
         
     def attachCache(self, cache):
         self.attachedCache.append(cache)
@@ -25,6 +24,7 @@ class Bus:
         block = None
         setIndex, setTag = currCache.translateAddr(memAddr)
 
+        # Check every other cache to see if another cache has the block required
         for i, cache in enumerate(self.attachedCache):
             if (i == cacheNum):
                 continue
@@ -34,24 +34,20 @@ class Bus:
                     if currBlock.blockId == setTag:
                         block = currBlock
 
-                        if currBlock.state == 'M':
+                        if currBlock.state == 'M' or currBlock.state == 'E':
                             self.privateDataAccesses += 1
-                        elif currBlock.state == 'E':
-                            self.privateDataAccesses += 1
+                            currBlock.state = 'S'
                         elif currBlock.state == 'S':
                             self.sharedDataAccesses += 1
 
-                    currBlock.state = 'S'
-
                     if block:
                         break
-
+                        
+        # If another cache has the block, I fetch it from that cache, else I fetch it from memory
         if block: 
-            for i, cache in enumerate(self.attachedCache):
-                if (i == cacheNum):
-                    for currBlock in cache.sets[setIndex].blocks:
-                        if currBlock.blockId == setTag:
-                            currBlock.state = 'S'
+            for currBlock in currCache.sets[setIndex].blocks:
+                if currBlock.blockId == setTag:
+                    currBlock.state = 'S'
             
             self.lock.release()
             return 2 * cache.blockSize / 4 
@@ -67,19 +63,20 @@ class Bus:
         self.traffic += currCache.blockSize
         setIndex, setTag = currCache.translateAddr(memAddr)
 
-        #Invalidate all caches with the same data from S to I
+        #Invalidate the blocks in other caches with the same tag to state I
+        #If prevState is already shared, the block does not need to be fetched
         if prevState == 'S':
             for i, cache in enumerate(self.attachedCache):
                 if (i == cacheNum):
                     continue
                     
                 if (cache.blockInCache(memAddr)):
-                    self.invalidations += 1
-                    self.sharedDataAccesses += 1
-
                     for currBlock in cache.sets[setIndex].blocks:
                         if currBlock.blockId == setTag:
+                            self.sharedDataAccesses += 1
                             currBlock.state = 'I'
+
+            self.invalidations += 1
             self.lock.release()
             return 0
 
@@ -95,17 +92,16 @@ class Bus:
                         if currBlock.blockId == setTag:
                             block = currBlock
 
-                            if currBlock.state == 'M':
-                                self.privateDataAccesses += 1
-                            elif currBlock.state == 'E':
+                            if currBlock.state == 'M' or currBlock.state == 'E':
                                 self.privateDataAccesses += 1
                             elif currBlock.state == 'S':
                                 self.sharedDataAccesses += 1
 
-                        currBlock.state = 'I'
-                        self.invalidations += 1
-
+                            currBlock.state = 'I'
+                    
+            # If another cache has the block, I fetch it from that cache, else I fetch it from memory
             if block:
+                self.invalidations += 1
                 self.lock.release()
                 return 2 * cache.blockSize / 4 
             else:
@@ -125,10 +121,12 @@ class Bus:
         block = None
         setIndex, setTag = currCache.translateAddr(memAddr)
 
-        # Check through my set of owners
+        # Check through my set of owners, to see if an owner contains the data we need
         if (setTag in self.owners):
+            self.sharedDataAccesses += 1
             block = True
 
+        #If none of the owner owns it, I check through every cache to find a cache that has the block we need and it is in either state 'M' or 'E'
         if not block:
             for i, cache in enumerate(self.attachedCache):
                 if (i == cacheNum):
@@ -139,20 +137,18 @@ class Bus:
                         if currBlock.blockId == setTag:
                             block = currBlock
 
-                            if currBlock.state == 'M':
+                            if currBlock.state == 'M' or currBlock.state == 'E':
                                 self.privateDataAccesses += 1
-                            elif currBlock.state == 'E':
-                                self.privateDataAccesses += 1
-
-                        currBlock.state = 'O'
-                        self.owners.add(setTag)
+                                currBlock.state = 'O'
+                                self.owners.add(setTag)
+                        
+                        if block:
+                            break
 
         if block: 
-            for i, cache in enumerate(self.attachedCache):
-                if (i == cacheNum):
-                    for currBlock in cache.sets[setIndex].blocks:
-                        if currBlock.blockId == setTag:
-                            currBlock.state = 'S'
+            for currBlock in currCache.sets[setIndex].blocks:
+                if currBlock.blockId == setTag:
+                    currBlock.state = 'S'
             
             self.lock.release()
             return 2 * cache.blockSize / 4 
@@ -168,7 +164,7 @@ class Bus:
         self.traffic += currCache.blockSize
         setIndex, setTag = currCache.translateAddr(memAddr)
 
-        #Invalidate all caches with the same data from S/O to I
+        #Invalidate all caches with the block of the same tag to state I
         if prevState == 'S' or prevState == 'O':
             self.owners.discard(setTag)
             for i, cache in enumerate(self.attachedCache):
@@ -176,12 +172,12 @@ class Bus:
                     continue
                     
                 if (cache.blockInCache(memAddr)):
-                    self.invalidations += 1
-                    self.sharedDataAccesses += 1
-
                     for currBlock in cache.sets[setIndex].blocks:
                         if currBlock.blockId == setTag:
+                            self.sharedDataAccesses += 1
                             currBlock.state = 'I'
+
+            self.invalidations += 1
             self.lock.release()
             return 0
 
@@ -197,9 +193,7 @@ class Bus:
                         if currBlock.blockId == setTag:
                             block = currBlock
 
-                            if currBlock.state == 'M':
-                                self.privateDataAccesses += 1
-                            elif currBlock.state == 'E':
+                            if currBlock.state == 'M' or currBlock.state == 'E':
                                 self.privateDataAccesses += 1
                             elif currBlock.state == 'S':
                                 self.sharedDataAccesses += 1
@@ -207,10 +201,10 @@ class Bus:
                                 self.sharedDataAccesses += 1
                                 self.owners.discard(setTag)
 
-                        currBlock.state = 'I'
-                        self.invalidations += 1
-
+                            currBlock.state = 'I'
+                        
             if block:
+                self.invalidations += 1
                 self.lock.release()
                 return 2 * cache.blockSize / 4 
             else:
