@@ -49,5 +49,6 @@ def main():
     for size in sizes:
         toRun("./outputs/newData/" + protocol + "_" + param  + "_" + dataSet + "_" + "outputs.txt", param, size, protocol, dataSet)
 
+
 if __name__ == "__main__":
     main()
