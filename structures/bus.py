@@ -34,7 +34,11 @@ class Bus:
                     if currBlock.blockId == setTag:
                         block = currBlock
 
-                        if currBlock.state == 'M' or currBlock.state == 'E':
+                        if currBlock.state == 'M':
+                            self.privateDataAccesses += 1
+                            currBlock.state = 'S'
+                            self.mesiFlush()
+                        elif currBlock.state == 'E':
                             self.privateDataAccesses += 1
                             currBlock.state = 'S'
                         elif currBlock.state == 'S':
@@ -137,7 +141,12 @@ class Bus:
                         if currBlock.blockId == setTag:
                             block = currBlock
 
-                            if currBlock.state == 'M' or currBlock.state == 'E':
+                            if currBlock.state == 'M': 
+                                self.privateDataAccesses += 1
+                                currBlock.state = 'O'
+                                self.moesiFlush()
+                                self.owners.add(setTag)
+                            elif currBlock.state == 'E':
                                 self.privateDataAccesses += 1
                                 currBlock.state = 'O'
                                 self.owners.add(setTag)
