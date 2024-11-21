@@ -37,7 +37,9 @@ class Bus:
                         if currBlock.state == 'M':
                             self.privateDataAccesses += 1
                             currBlock.state = 'S'
-                            self.mesiFlush()
+
+                            #For flushing when transitioning from state M to S
+                            self.traffic += self.attachedCache[0].blockSize
                         elif currBlock.state == 'E':
                             self.privateDataAccesses += 1
                             currBlock.state = 'S'
@@ -144,7 +146,9 @@ class Bus:
                             if currBlock.state == 'M': 
                                 self.privateDataAccesses += 1
                                 currBlock.state = 'O'
-                                self.moesiFlush()
+
+                                #For flushing when transitioning from state M to O
+                                self.traffic += self.attachedCache[0].blockSize
                                 self.owners.add(setTag)
                             elif currBlock.state == 'E':
                                 self.privateDataAccesses += 1
