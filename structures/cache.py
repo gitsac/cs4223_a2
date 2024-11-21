@@ -16,17 +16,19 @@ class Cache:
         
     def translateAddr(self, memAddr: str):
         addrInt = int(memAddr, 16)
-        addrBin = bin(addrInt)[2:]
-        while (len(addrBin) < 32):
-            addrBin = '0' + addrBin
+        addrBin = bin(addrInt)[2:].zfill(32)  # More concise way to zero-pad
         
         numBitsSetIndex = int(math.log(self.numSets, 2))
         numBitsOffset = int(math.log(self.blockSize, 2))
-        setNumberBin = addrBin[-(numBitsSetIndex + numBitsOffset - 1):-numBitsOffset]
+        
+        # Correct slice for set index
+        setNumberBin = addrBin[-(numBitsSetIndex + numBitsOffset):-numBitsOffset]
         setNumberInt = int(setNumberBin, 2)
         
+        # Correct slice for tag
         setTagBin = addrBin[0:-(numBitsSetIndex + numBitsOffset)]
         setTagInt = int(setTagBin, 2)
+        
         return setNumberInt, setTagInt
     
     #Check if block exists in cache
